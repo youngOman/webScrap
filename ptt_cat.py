@@ -3,7 +3,7 @@ import time
 from bs4 import BeautifulSoup
 import os
 import re
-import urllib.request
+from urllib.request import urlretrieve
 import json
 
 def get_web_page(url):
@@ -16,17 +16,14 @@ def get_web_page(url):
         return None
     else:
         return resp.text
-
-
 def get_articles(dom, date):
     soup = BeautifulSoup(dom, 'html5lib')
-
     # 取得上一頁的連結
-    paging_div = soup.find('div', 'btn-group btn-group-paging')
+    paging_div = soup.find('div','btn-group btn-group-paging')
     prev_url = paging_div.find_all('a')[1]['href']
 
     articles = []  # 儲存取得的文章資料
-    divs = soup.find_all('div', 'r-ent')
+    divs = soup.find_all('div', 'r-ent') 
     for d in divs:
         if d.find('div', 'date').text.strip() == date:  # 發文日期正確
             # 取得推文數
@@ -42,7 +39,6 @@ def get_articles(dom, date):
                         push_count = 99
                     elif push_str.startswith('X'):
                         push_count = -10
-
             # 取得文章連結及標題
             if d.find('a'):  # 有超連結，表示文章存在，未被刪除
                 href = d.find('a')['href']
@@ -55,8 +51,6 @@ def get_articles(dom, date):
                     'author': author
                 })
     return articles, prev_url
-
-
 def parse(dom):
     soup = BeautifulSoup(dom, 'html.parser')   #另一個 parser
     links = soup.find(id='main-content').find_all('a')
@@ -67,7 +61,6 @@ def parse(dom):
             img_urls.append(link['href'])
     return img_urls
 
- 
 def save(img_urls, title):
     if img_urls:
         try:
@@ -86,10 +79,9 @@ def save(img_urls, title):
                 # 有時圖片沒有加上.jpg，將之補上
                 if not img_url.endswith('.jpg'):
                     img_url += '.jpg'
-                    
                 print ("img_url_2", img_url)
                 fname = img_url.split('/')[-1]
-                urllib.request.urlretrieve(img_url, os.path.join(dname, fname))
+                urlretrieve(img_url, os.path.join(dname, fname))
                 #urllib.request.urlretrieve(url, filename): 將url表示的網絡對象複製到本地文件
                 #os.path.join(dname, fname): 將路徑(dname)和檔案名稱(fname)結合為完整路徑
                 
@@ -97,18 +89,16 @@ def save(img_urls, title):
             print(e)
 
 PTT_URL = 'https://www.ptt.cc'
-
 if __name__ == '__main__':
     current_page = get_web_page(PTT_URL + '/bbs/Tech_Job/index.html')
     if current_page:
         articles = []  # 全部的今日文章
-        date = time.strftime("%m/%d").lstrip('0')  # 今天日期, 去掉開頭的 '0' 以符合 PTT 網站格式
+        date = time.strftime("%m/%d").lstrip('0')  #今天日期, 去掉開頭的 '0' 以符合 PTT 網站格式
         current_articles, prev_url = get_articles(current_page, date)  # 目前頁面的今日文章
         #測試用-只處理目前頁面的--------------------------------
         articles += current_articles
         print (articles)
-        #測試用--------------------------------- 
-        
+        #測試用---------------------------------       
 #原本的程式先註解        
 #        #若目前頁面有今日文章則加入 articles，並回到上一頁繼續尋找是否有今日文章
 #        while current_articles:  
@@ -123,10 +113,8 @@ if __name__ == '__main__':
             if page:
                 #呼叫方法 parse處理圖片
                 img_urls = parse(page)
-                
                 #將圖片存爝
                 save(img_urls, article['title'])
                 article['num_image'] = len(img_urls)
-
         print ("after:")
         print (articles)

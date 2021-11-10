@@ -58,7 +58,7 @@ class PchomeSpider():
             '新上市': 'new/dc',
         }
 
-        url = f'https://ecshweb.pchome.com.tw/search/v3.3/{all_shop[shop]}/results'
+        url = f'https://ecshweb.pchome.com.tw/search/v3.3/{all_shop[shop]}/results' #要有f才能在字串中加入all_shop
         params = {
             'q': keyword,
             'sort': all_sort[sort],
@@ -132,18 +132,17 @@ class PchomeSpider():
         """
         if type(categories_id) == list:
             categories_id = ','.join(categories_id)
-        url = f'https://ecapi-pchome.cdn.hinet.net/cdn/ecshop/cateapi/v1.5/store&id={categories_id}&fields=Id,Name'
+        url = f'https://ecapi-pchome.cdn.hinet.net/cdn/ecshop/cateapi/v1.5/store&id={categories_id}&fields=Id,Name' #功能同str.format() %,
         data = self.request_get(url)
         return data
 
 
 if __name__ == '__main__':
     pchome_spider = PchomeSpider()
-
-    products = pchome_spider.search_products(keyword='手機')
+    # products = pchome_spider.search_products(keyword='手機')
     # products = pchome_spider.search_products(keyword='手機', shop='24h購物', sort='價錢由高至低', price_min=0, price_max=5000)
     # print(len(products))
-    print(products[0])
+    # print(products[0])
     # product_id = products[0]['Id']
 
     # products_id = ['DCAD6E-A900B1YM4', 'DCAD6E-A900B1YMO', 'DYAW0H-A900B4HAZ']
@@ -155,9 +154,9 @@ if __name__ == '__main__':
     # products_specification = pchome_spider.get_products_specification(products_id)
     # print(products_specification)
 
-    # search_category = pchome_spider.get_search_category(keyword='手機')
-    # main_category = search_category[2]['nodes'][0]
-    # print(main_category)
+    search_category = pchome_spider.get_search_category(keyword='手機')
+    main_category = search_category[2]['nodes'][0]
+    print(main_category)
 
     # categories_id = [cate['Id'] for cate in main_category['nodes']]
     # categories_name = pchome_spider.get_search_categories_name(categories_id)
