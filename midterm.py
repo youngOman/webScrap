@@ -32,11 +32,23 @@ def get_article(dom):
             'push_count':push.text,
         })
     return article_url_list
-# def article_info(dom):
-def parse(dom):
-    soup = BeautifulSoup(dom,'html.parser')
-    links=soup.select_one('.c-section__main c-post')
-    print(links)
+def article_info(dom):
+    soup=BeautifulSoup(dom,features='lxml')
+    article_title=soup.select_one('h1.c-post__header__title')
+    # print(article_title) #---測試用
+    reply_info_list=[]
+    article_info={
+        'title':article_title,
+        'reply':reply_info_list
+    }
+def get_reply_info_list
+# def parse(dom):
+#     soup = BeautifulSoup(dom,'html.parser')
+#     links=soup.find('div','c-section__main c-post').find_all('a')
+#     img_urls=[]
+#     for link in links:
+#         if re.match(r'https?://pbs.twimg.com/media/FCgQ2OfX0AUotKN.jpg')
+#     print(links)
 
 
 
@@ -44,9 +56,10 @@ def parse(dom):
 
 Game_URL='https://forum.gamer.com.tw/'
 if __name__ == '__main__':
-    current_page=get_web_page(Game_URL+'B.php?bsn=47157&subbsn=4') 
+    current_page=get_web_page(Game_URL+'C.php?bsn=47157&snA=484&tnum=4') #  B.php?bsn=47157
     get_article(current_page)
     if current_page:
         article_url_list=get_article(current_page)
         # print(article_url_list)
-    parse(Game_URL+'C.php?bsn=47157&snA=485&tnum=3')
+        # parse(current_page)
+        article_info(current_page)
