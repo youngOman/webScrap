@@ -97,7 +97,7 @@ if __name__ == '__main__':
         current_articles, prev_url = get_articles(current_page, date)  # 目前頁面的今日文章
         #測試用-只處理目前頁面的--------------------------------
         articles += current_articles
-        print (articles)
+        # print (articles)
         #測試用---------------------------------       
 #原本的程式先註解        
 #        #若目前頁面有今日文章則加入 articles，並回到上一頁繼續尋找是否有今日文章

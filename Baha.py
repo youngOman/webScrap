@@ -55,8 +55,6 @@ def get_article_info(article_url):
         'reply': reply_info_list
     }
     return article_info
-
-
 def get_reply_info_list(url):
     """爬取回覆列表"""
     r = requests.get(url, headers=HEADERS)
@@ -71,11 +69,9 @@ def get_reply_info_list(url):
     # 對每一則回覆解析資料
     for reply_block in reply_blocks:
         reply_info = {}
-
         reply_info['floor'] = int(reply_block.select_one('.floor').get('data-floor'))
         reply_info['user_name'] = reply_block.select_one('.username').text
         reply_info['user_id'] = reply_block.select_one('.userid').text
-
         publish_time = reply_block.select_one('.edittime').get('data-mtime')
         reply_info['publish_time'] = datetime.strptime(publish_time, '%Y-%m-%d %H:%M:%S')
 
@@ -110,8 +106,8 @@ if __name__ == "__main__":
     # 欲爬取板塊：荒野亂鬥 哈拉板
     url = 'https://forum.gamer.com.tw/B.php?bsn=32407'
     article_url_list = get_article_url_list(url)
-    print(f"共爬取 {len(article_url_list)} 篇文章")
-    print('=' * 30)
+    # print(f"共爬取 {len(article_url_list)} 篇文章")
+    # print('=' * 30)
 
     # for article_url in article_url_list:
     #     article_info = get_article_info(article_url)
@@ -121,6 +117,7 @@ if __name__ == "__main__":
 
     # 測試第一篇
     article_info = get_article_info(article_url_list[0])
-    print(article_info['title'])
-    print(article_info['url'])
-    print(f"共 {len(article_info['reply'])} 則回覆")
+    print(article_info)
+    # print(article_info['title'])
+    # print(article_info['url'])
+    # print(f"共 {len(article_info['reply'])} 則回覆")
