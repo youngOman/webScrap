@@ -56,7 +56,7 @@ def parse(dom):
     links = soup.find(id='main-content').find_all('a')
     img_urls = []
     for link in links:
-#        print("link:", link)
+        #print("link:", link)
         if re.match(r'^https?://(i.)?(m.)?imgur.com', link['href']):
             img_urls.append(link['href'])
     return img_urls
@@ -68,7 +68,7 @@ def save(img_urls, title):
             dname = title.strip()  # 用 strip() 去除字串前後的空白
             os.makedirs(dname)     # 建立資料夾
             for img_url in img_urls:
-                print ("img_url_1", img_url)
+                # print ("img_url_1", img_url)
                 #'https://imgur.com/A2wmlqW.jpg'.split('//') 
                 # -> ['https:', 'imgur.com/A2wmlqW.jpg']
                 if img_url.split('//')[1].startswith('m.'):

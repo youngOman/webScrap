@@ -27,10 +27,11 @@ def get_article_list(dom):
         article_url = f"https://forum.gamer.com.tw/{url_title.get('href')}"
         # url_title_name = item_block.select_one('.b-list__main__title').text  #文章標題名稱
         # push_count=item_block.find('span','b-list__summary__gp').text #推文數 select('.b-list__summary__gp')
-        # Popularity=soup.select_one('.b-list__count__number > span').text #擷取文章人氣值
+        # Popularity=item_block.select_one('.b-list__count__number > span:last-of-type').text #擷取文章人氣值
         # Post_date_time=item_block.select_one('.b-list__time__edittime').text.strip() #發文日期及時間
         article_url_list.append(
-            article_url
+            article_url #要取得內文時，只需取網址
+            # 'url':article_url,
             # 'url_title_name':url_title_name,
             # 'push_count':push_count,
             # 'Popularity':Popularity, 
@@ -53,10 +54,11 @@ def get_article_detail(dom):
     reply_info_list.extend(reply_list) #不會將整個串列帶進去List只會將值帶入
     time.sleep(1) #避免被認為是惡意爬蟲
     article_info={
-        'title':article_title,
-        'url':article_detail_url,
-        'reply':reply_info_list,
+        'a_title':article_title, #由於dict排序預設以字母排列，所以我在我想把要放在0,1的位置上的元素加上a
+        'a_url':article_detail_url,
+        'reply_list':reply_info_list,
     }
+    # article_info.update({})
     return article_info
 def get_reply_info_list(dom): #取得每一樓層的回覆
     resp = requests.get(dom, headers=HEADERS)
@@ -88,80 +90,64 @@ def get_reply_info_list(dom): #取得每一樓層的回覆
         elif bp_count == 'X': #倒讚倒500會變X
             bp_count = 500
         reply_info['bp_count'] = int(bp_count)
-
         reply_info_list.append(reply_info)
+
     return reply_info_list
-    
 # def get_article_total_page(dom): #討論串超過一頁再開
 #     """取得文章總頁數"""
 #     soup=BeautifulSoup(dom,features='lxml')
 #     article_total_page = soup.select_one('.BH-pagebtnA > a:last-of-type').text #尾頁數
 #     return int(article_total_page) #總共有幾頁
-
-def parse(dom):
-    soup = BeautifulSoup(dom, 'html.parser')   #另一個 parser
-    links = soup.select('section[id^="post_"]').find_all('a')
-    img_urls = []
-    for link in links:
-#       print("link:", link)
-        if re.match(r'^https?://(i.)?(m.)?imgur.com', link['href']):
-            img_urls.append(link['href'])
+def get_img_url(dom):
+    soup = BeautifulSoup(dom, 'html.parser')
+    reply_blocks=soup.find('div',class_='c-post__body').find_all('a')
+    img_urls=[]
+    for reply_block in reply_blocks:
+        if re.match(r'^https?://pbs.twimg.com/media/[A-Za-z0-9]+.jpg',reply_block['href']):
+            img_urls.append(reply_block['href'])
     return img_urls
-def save(img_urls, title):
-    if img_urls:
-        try:
-            title = title.replace("/", "-") 
-            dname = title.strip()  # 用 strip() 去除字串前後的空白
-            os.makedirs(dname)     # 建立資料夾
-            for img_url in img_urls:
-                print ("img_url_1", img_url)
-                #'https://imgur.com/A2wmlqW.jpg'.split('//') 
-                # -> ['https:', 'imgur.com/A2wmlqW.jpg']
-                if img_url.split('//')[1].startswith('m.'): 
-                    img_url = img_url.replace('//m.', '//i.')
-                if not img_url.split('//')[1].startswith('i.'):
-                    img_url = img_url.split('//')[0] + '//i.' + img_url.split('//')[1]
-                 
-                # 有時圖片沒有加上.jpg，將之補上
-                if not img_url.endswith('.jpg'):
-                    img_url += '.jpg'
-                print ("img_url_2", img_url)
-                fname = img_url.split('/')[-1]
-                urlretrieve(img_url, os.path.join(dname, fname))
-                #urllib.request.urlretrieve(url, filename): 將url表示的網絡對象複製到本地文件
-                #os.path.join(dname, fname): 將路徑(dname)和檔案名稱(fname)結合為完整路徑
-                
-        except Exception as e:
-            print(e)
 
 # print(soup.prettify()) #soup就是的html_doc解析的結果
 # C.php?bsn=47157&snA=484&tnum=4 文章內文
 # B.php?bsn=47157 文章列表
-Game_URL='https://forum.gamer.com.tw/B.php?bsn=47157'
+Game_URL='https://forum.gamer.com.tw/C.php?bsn=47157&snA=484&tnum=4'
 if __name__ == '__main__':
     current_page=get_web_page(Game_URL)
     # if current_page: 
-    article_url_list=get_article_list(current_page)
-    # print(f"共爬取 {len(article_url_list)} 篇文章")
-    # print(articles)
-
-    # for article in articles:
-    #     print(article)
+    dname=".\\星期一的豐滿"
+    os.makedirs(dname)
+    img_urls=get_img_url(current_page)
+    for url in img_urls:
+        fname = url.split('/')[-1]
+        urlretrieve(url,os.path.join(dname,fname))
+    # article_url_list=get_article_list(current_page) #所有文章的網址 || 文章列表的網址及資訊
+    # -----從文章列表一一爬取"全部"文章的內文
+    # for art_url in article_url_list:
+    #     article_info=get_article_detail(art_url) #要爬取的文章url
+    #     print(article_info)
+    #     with open('bahaReplySection.json','a',encoding='UTF-8') as f: 
+    #         json.dump(article_info,f,indent=2,sort_keys=True,ensure_ascii=False,default=str)
+    # print(f"共爬了{len(article_url_list)} 篇文章")
+    #-------取得文章列表資訊
+    # arts=get_article_list(current_page)
     # with open('baha.json','w',encoding='UTF-8') as f:
-    #     json.dump(articles,f,indent=2,sort_keys=True,ensure_ascii=False)
+    #     json.dump(arts,f,indent=2,sort_keys=True,ensure_ascii=False)
 
-    # date = time.strftime("%m/%d").lstrip('0')  #
+    # date = time.strftime("%m/%d").lstrip('0') 
     # parse(current_page)
-    # article_info(current_page)
-    # print(article_info(current_page))
 
-    article_info=get_article_detail(article_url_list[28]) #要爬取的文章index 
-    title_url={'title':article_info['title'],'url':article_info['url']} #將title和url存成字典
-    for data in article_info['reply']:
-        print(data)
-    all_data=title_url|data #合併兩個dict
-    # print(all_data)
-    with open('bahaReplySection.json','w',encoding='UTF-8') as f: 
-        # json.dump(title_url,f,indent=2,sort_keys=True,ensure_ascii=False,default=str)
-        json.dump(all_data,f,indent=2,sort_keys=True,ensure_ascii=False,default=str)
+    # article_info=get_article_detail(article_url_list[29]) #指定取得哪"一個"文章討論串內文
+    # print(article_info['a_title'])
+
+    # for data in article_info:
+    #     print(data)
+    
+    
+
+    # all_data=title_url|data #合併兩個dict
+    # with open('bahaReplySection.json','w',encoding='UTF-8') as f: 
+    #     json.dump(article_info,f,indent=2,sort_keys=True,ensure_ascii=False,default=str)
+
+
+
 
